@@ -32,7 +32,7 @@ class Kernel extends HttpKernel
             \Illuminate\Session\Middleware\StartSession::class,
             // \Illuminate\Session\Middleware\AuthenticateSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            \App\Http\Middleware\VerifyCsrfToken::class,
+        //    \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
 
@@ -56,5 +56,9 @@ class Kernel extends HttpKernel
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+	   'role' => \Laratrust\Middleware\LaratrustRole::class,
+	   'permission' => \Laratrust\Middleware\LaratrustPermission::class,
+	   'ability' => \Laratrust\Middleware\LaratrustAbility::class,
+        'jwt' =>  \App\Http\Middleware\JwtAuth::class,
     ];
 }

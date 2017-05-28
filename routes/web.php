@@ -14,3 +14,14 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
+
+Route::group(['prefix'=>'api/v1','middleware'=>['jwt']], function () {
+    Route::resource('rooms', 'RoomsController');
+    Route::resource('class', 'ClassController');
+});
+
+Route::get('/api/v1/getToken', 'TokenController@getToken');
