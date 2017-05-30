@@ -4,11 +4,18 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Session;
-
+use Exception;
 use App\Room;
+use Validator;
 
 class RoomsController extends Controller
 {
+
+    protected function formatErrors(Validator $validator)
+    {
+        return $validator->errors()->all();
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -16,10 +23,18 @@ class RoomsController extends Controller
      */
     public function index(Request $request)
     {
-        $payload = $request->input('payload');
-        
-        $data = ['data' => Room::all()];
+        try {
+            $status = 'success';
+            $record = Room::select('rooms.*','class.name','class.price')
+                ->join('class','class.id','=','rooms.class_id')->get();
+            $data = ['data' => $record, 'status'=>$status];
+            return response()->json($data);
+        } catch (Exception $e) {
+            $data = array('status' => 'error','message'=> $e->getMessage());
+        }
+
         return response()->json($data);
+
     }
 
     /**
@@ -40,12 +55,22 @@ class RoomsController extends Controller
      */
     public function store(Request $request)
     {
-//        $this->validate($request, Room::getValidation());
-//        Room::create($request);
-        $a = $request->all();
-        $a['halo'] = $request->header('Authorization');
+        try {
+            $data = array('status' => 'success','message' => 'record was successfuly added');
 
-        return response()->json($a);
+            $validator = Validator::make($request->all(), Room::getValidation());
+            if ($validator->fails()) {
+                $data['status'] = 'error';
+                $data['message'] = $validator->messages();
+                return response()->json($data);
+            }
+
+            Room::create($request->all());
+        } catch (Exception $e) {
+            $data = array('status' => 'error','message'=> $e->getMessage());
+        }
+
+        return response()->json($data);
     }
 
     /**
@@ -56,7 +81,15 @@ class RoomsController extends Controller
      */
     public function show($id)
     {
-        //
+        try {
+            $record = Room::select('rooms.*','class.name','class.price')
+                ->join('class','class.id','=','rooms.class_id')->findOrFail($id);
+            $data = array('status' => 'success','data' => $record);
+        } catch (Exception $e) {
+            $data = array('status' => 'error','message'=> $e->getMessage());
+        }
+
+        return response()->json($data);
     }
 
     /**
@@ -79,7 +112,26 @@ class RoomsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        try {
+            $input = $request->all();
+            $data = array('status' => 'success','message' => 'record was successfuly added');
+
+            $validator = Validator::make($input, Room::getValidation($id));
+            if ($validator->fails()) {
+                $data['status'] = 'error';
+                $data['message'] = $validator->messages();
+                return response()->json($data);
+            }
+
+            $record = Room::findOrFail($id);
+            $record->update($input);
+
+            $data = array('status' => 'success','message' => 'record was successfuly edited');
+        } catch (Exception $e) {
+            $data = array('status' => 'error','message'=> $e->getMessage());
+        }
+
+        return response()->json($data);
     }
 
     /**
@@ -90,8 +142,14 @@ class RoomsController extends Controller
      */
     public function destroy($id)
     {
-        $data = Room::find($id);
-        $data->delete();
+        try {
+            $record = Room::findOrFail($id);
+            $record->delete();
+
+            $data = array('status' => 'success','message' => 'record was successfuly deleted');
+        } catch (Exception $e) {
+            $data = array('status' => 'error','message'=> $e->getMessage());
+        }
 
         return response()->json($data);
     }

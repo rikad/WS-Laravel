@@ -15,8 +15,13 @@ class ClassController extends Controller
      */
     public function index()
     {
-        $status = 'success';
-        $data = ['data' => Classes::all(), 'status' => $status ];
+        try {
+            $status = 'success';
+            $data = ['data' => Classes::all(), 'status' => $status ];
+        } catch (Exception $e) {
+            $data = array('status' => 'error','message'=> $e->getMessage());
+        }
+
         return response()->json($data);
     }
 
@@ -39,9 +44,16 @@ class ClassController extends Controller
     public function store(Request $request)
     {
         try {
-            $this->validate($request, Classes::getValidation());
-            Classes::create($request->all());
             $data = array('status' => 'success','message' => 'record was successfuly added');
+
+            $validator = Validator::make($request->all(), Classes::getValidation());
+            if ($validator->fails()) {
+                $data['status'] = 'error';
+                $data['message'] = $validator->messages();
+                return response()->json($data);
+            }
+            Classes::create($request->all());
+
         } catch (Exception $e) {
             $data = array('status' => 'error','message'=> $e->getMessage());
         }
@@ -88,14 +100,19 @@ class ClassController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $this->validate($request, Classes::getValidation($id));
-
             $input = $request->all();
+            $data = array('status' => 'success','message' => 'record was successfuly added');
+
+            $validator = Validator::make($input, Classes::getValidation($id));
+            if ($validator->fails()) {
+                $data['status'] = 'error';
+                $data['message'] = $validator->messages();
+                return response()->json($data);
+            }
+
             $record = Classes::findOrFail($id);
-            json_encode($request);
             $record->update($input);
 
-            $data = array('status' => 'success','message' => 'record was successfuly edited');
         } catch (Exception $e) {
             $data = array('status' => 'error','message'=> $e->getMessage());
         }

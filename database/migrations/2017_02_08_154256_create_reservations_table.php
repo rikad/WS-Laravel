@@ -41,7 +41,7 @@ class CreateReservationsTable extends Migration
             $table->increments('id');
             $table->string('code',10)->unique();
             $table->string('description',100)->nullable();
-            $table->integer('class_id')->unsigned();;
+            $table->integer('class_id')->unsigned();
 
             $table->foreign('class_id')->references('id')->on('class')->onUpdate('cascade')->onDelete('cascade');
         });

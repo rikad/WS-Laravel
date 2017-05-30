@@ -27,7 +27,7 @@ class TokenController extends Controller
     }
 
     public function getToken(Request $request) {
-        $time = time() + ( 24 * 10 * 10); // one day
+        $time = time() + ( 10 * 10 * 10 * 10); // one day
         $secret = config('app.key'); // get from config file
         $status = 'success';
 
